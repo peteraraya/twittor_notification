@@ -151,7 +151,8 @@ self.addEventListener('push', e => {
         vibrate: [125, 75, 125, 275, 200, 275, 125, 75, 125, 275, 200, 600, 200, 600],
         openUrl: '/', // dirección que quedramos que abra cuando se haga click en la notificación
         data: {
-            url: 'https://google.com',
+            // url: 'https://google.com',
+             url: '/',
             id: data.user
         },
         actions: [
@@ -183,13 +184,34 @@ self.addEventListener('notificationclick', e => {
     const notificacion = e.notification;
     const accion = e.action;
 
-    console.log({ notificacion,accion})
-    console.log(notificacion);
-    console.log(accion);
+    const respuesta = clients.matchAll()
+        .then((clientes) => {
+
+            // va a ser un arreglo de todos los tabs
+            // solo quiero que aparesca los tab que estan 
+            // los clientes serian los tabs de la aplicación
+
+            let cliente = clientes.find(c => {
+                return c.visibilityState === 'visible';
+            });
+
+            if (cliente !== undefined) {
+                cliente.navigate(notificacion.data.url);
+                cliente.focus();
+            } else {
+                clientes.openWindow(notificacion.data.url)
+            }
+
+            return notificacion.close();
+        });
+
+    e.waitUntil(respuesta);
 
 
+    // console.log({ notificacion,accion})
+    // console.log(notificacion);
+    // console.log(accion);
 
-    notificacion.close();
     // esperamos que algo sucedas
     // e.waitUntil()
-})
+});
